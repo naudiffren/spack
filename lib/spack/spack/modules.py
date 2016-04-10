@@ -229,14 +229,15 @@ class Dotkit(EnvModule):
 
     @property
     def file_name(self):
-        return join_path(Dotkit.path, self.spec.architecture, '%s.dk' % self.use_name)
+        return join_path(Dotkit.path, self.spec.architecture, self.spec.name,
+                '%s.dk' % self.use_name)
 
     @property
     def use_name(self):
-      return "%s-%s-%s-%s-%s" % (self.spec.name, self.spec.version,
+      return "%s-%s-%s%s" % (self.spec.version,
                                  self.spec.compiler.name,
                                  self.spec.compiler.version,
-                                 self.spec.dag_hash())
+                                 self.spec.variants)
 
     def write_header(self, dk_file):
         # Category
@@ -267,14 +268,14 @@ class TclModule(EnvModule):
 
     @property
     def file_name(self):
-        return join_path(TclModule.path, self.spec.architecture, self.use_name)
+        return join_path(TclModule.path, self.spec.architecture, self.spec.name, self.use_name)
 
     @property
     def use_name(self):
-      return "%s-%s-%s-%s-%s" % (self.spec.name, self.spec.version,
+      return "%s-%s-%s%s" % (self.spec.version,
                                  self.spec.compiler.name,
                                  self.spec.compiler.version,
-                                 self.spec.dag_hash())
+                                 self.spec.variants)
 
     def write_header(self, module_file):
         # TCL Modulefile header
@@ -290,3 +291,6 @@ class TclModule(EnvModule):
             for line in textwrap.wrap(self.long_description, 72):
                 module_file.write("puts stderr \"%s\"\n" % line)
             module_file.write('}\n\n')
+
+        # Write out directory based conflict
+        module_file.write('conflict %s\n\n' % self.spec.name)
