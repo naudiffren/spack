@@ -1,0 +1,70 @@
+from spack import *
+import os
+import subprocess
+
+class Turbomole(Package):
+    """Description"""
+
+    homepage = "http://www.turbomole.com/"
+
+    version('7.0.2', '92b97e1e52e8dcf02a4d9ac0147c09d6', url="file://%s/turbolinux702.tar.gz" % os.getcwd())
+
+    variant('mpi', default=False, description='Set up MPI environment')
+    variant('smp', default=False, description='Set up SMP environment')
+
+    def install(self, spec, prefix):
+        if '+mpi' in spec and '+smp' in spec:
+	    raise InstallError('Can not have both SMP and MPI enabled in the same build.')
+        tar = which('tar')
+	dst = join_path(prefix, 'TURBOMOLE')
+
+        tar('-x', '-z', '-f', 'thermocalc.tar.gz')
+        with working_dir('thermocalc'):
+            cmd = 'sh install <<<y'
+            subprocess.call(cmd, shell=True)
+
+        install_tree('basen', join_path(dst, 'basen'))
+        install_tree('cabasen', join_path(dst, 'cabasen'))
+        install_tree('calculate_2.4_linux64', join_path(dst, 'calculate_2.4_linux64'))
+        install_tree('cbasen', join_path(dst, 'cbasen'))
+        install_tree('DOC', join_path(dst, 'DOC'))
+        install_tree('jbasen', join_path(dst, 'jbasen'))
+        install_tree('jkbasen', join_path(dst, 'jkbasen'))
+        install_tree('libso', join_path(dst, 'libso'))
+        install_tree('MoleControl_2.5', join_path(dst, 'MoleControl_2.5'))
+        install_tree('mpirun_scripts', join_path(dst, 'mpirun_scripts'))
+        install_tree('parameter', join_path(dst, 'parameter'))
+        install_tree('perlmodules', join_path(dst, 'perlmodules'))
+        install_tree('scripts', join_path(dst, 'scripts'))
+        install_tree('smprun_scripts', join_path(dst, 'smprun_scripts'))
+        install_tree('structures', join_path(dst, 'structures'))
+        install_tree('thermocalc', join_path(dst, 'thermocalc'))
+        install_tree('TURBOTEST', join_path(dst, 'TURBOTEST'))
+        install_tree('xbasen', join_path(dst, 'xbasen'))
+
+        install('Config_turbo_env', dst)
+        install('Config_turbo_env.tcsh', dst)
+        install('README', dst)
+        install('README_LICENSES', dst)
+        install('TURBOMOLE_702_LinuxPC', dst)
+
+	if '+mpi' in spec:
+	    install_tree('bin/x86_64-unknown-linux-gnu_mpi', join_path(dst, 'bin', 'x86_64-unknown-linux-gnu_mpi'))
+	elif '+smp' in spec:
+	    install_tree('bin/x86_64-unknown-linux-gnu_smp', join_path(dst, 'bin', 'x86_64-unknown-linux-gnu_smp'))
+        else:
+	    install_tree('bin/x86_64-unknown-linux-gnu', join_path(dst, 'bin', 'x86_64-unknown-linux-gnu'))
+
+    def setup_environment(self, spack_env, run_env):
+        run_env.set('TURBODIR', join_path(self.prefix, 'TURBOMOLE'))
+	run_env.set('MOLE_CONTROL', join_path(self.prefix, 'TURBOMOLE', 'MoleControl_2.5'))
+
+	run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'scripts'))
+        if '+mpi' in self.spec:
+            run_env.set('PARA_ARCH', 'MPI')
+            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', 'x86_64-unknown-linux-gnu_mpi'))
+        elif '+smp' in self.spec:
+            run_env.set('PARA_ARCH', 'SMP')
+            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', 'x86_64-unknown-linux-gnu_smp'))
+        else:
+            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', 'x86_64-unknown-linux-gnu'))
