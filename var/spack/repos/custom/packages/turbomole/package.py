@@ -3,9 +3,9 @@ import os
 import subprocess
 
 class Turbomole(Package):
-    """Description"""
+    """TURBOMOLE: Program Package for ab initio Electronic Structure Calculations"""
 
-    homepage = "http://www.turbomole.com/"
+    homepage = "http://www.turbomole-gmbh.com/"
 
     version('7.0.2', '92b97e1e52e8dcf02a4d9ac0147c09d6', url="file://%s/turbolinux702.tar.gz" % os.getcwd())
 
@@ -13,6 +13,10 @@ class Turbomole(Package):
     variant('smp', default=False, description='Set up SMP environment')
 
     def install(self, spec, prefix):
+        if spec.satisfies('@:7.0.2'):
+            calculate_version = 'calculate_2.4_linux64'
+            molecontrol_version = 'MoleControl_2.5'
+
         if '+mpi' in spec and '+smp' in spec:
 	    raise InstallError('Can not have both SMP and MPI enabled in the same build.')
         tar = which('tar')
@@ -25,13 +29,13 @@ class Turbomole(Package):
 
         install_tree('basen', join_path(dst, 'basen'))
         install_tree('cabasen', join_path(dst, 'cabasen'))
-        install_tree('calculate_2.4_linux64', join_path(dst, 'calculate_2.4_linux64'))
+        install_tree(calculate_version, join_path(dst, calculate_version))
         install_tree('cbasen', join_path(dst, 'cbasen'))
         install_tree('DOC', join_path(dst, 'DOC'))
         install_tree('jbasen', join_path(dst, 'jbasen'))
         install_tree('jkbasen', join_path(dst, 'jkbasen'))
         install_tree('libso', join_path(dst, 'libso'))
-        install_tree('MoleControl_2.5', join_path(dst, 'MoleControl_2.5'))
+        install_tree(molecontrol_version, join_path(dst, molecontrol_version))
         install_tree('mpirun_scripts', join_path(dst, 'mpirun_scripts'))
         install_tree('parameter', join_path(dst, 'parameter'))
         install_tree('perlmodules', join_path(dst, 'perlmodules'))
@@ -56,8 +60,11 @@ class Turbomole(Package):
 	    install_tree('bin/x86_64-unknown-linux-gnu', join_path(dst, 'bin', 'x86_64-unknown-linux-gnu'))
 
     def setup_environment(self, spack_env, run_env):
+        if self.spec.satisfies('@:7.0.2'):
+            molecontrol_version = 'MoleControl_2.5'
+
         run_env.set('TURBODIR', join_path(self.prefix, 'TURBOMOLE'))
-	run_env.set('MOLE_CONTROL', join_path(self.prefix, 'TURBOMOLE', 'MoleControl_2.5'))
+	run_env.set('MOLE_CONTROL', join_path(self.prefix, 'TURBOMOLE', molecontrol_version))
 
 	run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'scripts'))
         if '+mpi' in self.spec:
