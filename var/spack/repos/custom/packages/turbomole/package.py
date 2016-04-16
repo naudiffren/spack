@@ -3,14 +3,14 @@ import os
 import subprocess
 
 class Turbomole(Package):
-    """TURBOMOLE: Program Package for ab initio Electronic Structure Calculations
+    """TURBOMOLE: Program Package for ab initio Electronic Structure Calculations"""
        
-       Note: Turbomole requires purchase of a license to download. Go to the
-       Turbomole home page, http://www.turbomole-gmbh.com, for details. Spack
-       will search the current directory for this file. It is probably best to
-       add this file to a Spack mirror so that it can be found from anywhere.
-       For information on setting up a Spack mirror see
-       http://software.llnl.gov/spack/mirrors.html"""
+   # NOTE: Turbomole requires purchase of a license to download. Go to the
+   # NOTE: Turbomole home page, http://www.turbomole-gmbh.com, for details.
+   # NOTE: Spack will search the current directory for this file. It is
+   # NOTE: probably best to add this file to a Spack mirror so that it can be
+   # NOTE: found from anywhere.  For information on setting up a Spack mirror
+   # NOTE: see http://software.llnl.gov/spack/mirrors.html
 
     homepage = "http://www.turbomole-gmbh.com/"
 
