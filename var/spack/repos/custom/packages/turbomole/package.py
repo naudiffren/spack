@@ -3,7 +3,8 @@ import os
 import subprocess
 
 class Turbomole(Package):
-    """TURBOMOLE: Program Package for ab initio Electronic Structure Calculations"""
+    """TURBOMOLE: Program Package for ab initio Electronic Structure
+       Calculations. NB: Requires a license to download."""
        
    # NOTE: Turbomole requires purchase of a license to download. Go to the
    # NOTE: Turbomole home page, http://www.turbomole-gmbh.com, for details.
@@ -14,7 +15,8 @@ class Turbomole(Package):
 
     homepage = "http://www.turbomole-gmbh.com/"
 
-    version('7.0.2', '92b97e1e52e8dcf02a4d9ac0147c09d6', url="file://%s/turbolinux702.tar.gz" % os.getcwd())
+    version('7.0.2', '92b97e1e52e8dcf02a4d9ac0147c09d6')
+    url="file://%s/turbolinux702.tar.gz" % os.getcwd()
 
     variant('mpi', default=False, description='Set up MPI environment')
     variant('smp', default=False, description='Set up SMP environment')
@@ -27,6 +29,11 @@ class Turbomole(Package):
     # Only one of these can be active at a time. MPI and SMP are set as
     # variants so there could be up to 3 installs per version. Switching
     # between them would be accomplished with `module swap` commands. 
+
+    def do_fetch(self, mirror_only=True):
+        if '+mpi' in self.spec and '+smp' in self.spec:
+	    raise InstallError('Can not have both SMP and MPI enabled in the same build.')
+        super(Turbomole, self).do_fetch(mirror_only)
 
     def get_tm_arch(self):
 	# For python-2.7 we could use `tm_arch = subprocess.check_output()`
@@ -43,8 +50,6 @@ class Turbomole(Package):
 
         tm_arch=self.get_tm_arch()
 
-        if '+mpi' in spec and '+smp' in spec:
-	    raise InstallError('Can not have both SMP and MPI enabled in the same build.')
         tar = which('tar')
 	dst = join_path(prefix, 'TURBOMOLE')
 
