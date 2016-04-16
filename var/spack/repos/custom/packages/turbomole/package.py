@@ -119,5 +119,4 @@ class Turbomole(Package):
             run_env.set('PARA_ARCH', 'SMP')
             run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', '%s_smp' % tm_arch))
         else:
-            pass
             run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', tm_arch))
