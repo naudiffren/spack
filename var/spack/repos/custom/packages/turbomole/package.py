@@ -79,11 +79,11 @@ class Turbomole(Package):
 	if '+mpi' in spec:
 	    install_tree('bin/%s_mpi' % tm_arch, join_path(dst, 'bin', '%s_mpi' % tm_arch))
 	    install_tree('libso/%s_mpi' % tm_arch, join_path(dst, 'libso', '%s_mpi' % tm_arch))
-	    install_tree('mpirun_scripts/%s_mpi', join_path(dst, 'mpirun_scripts', '%s_mpi' % tm_arch))
+	    install_tree('mpirun_scripts/%s_mpi' % tm_arch, join_path(dst, 'mpirun_scripts', '%s_mpi' % tm_arch))
 	elif '+smp' in spec:
 	    install_tree('bin/%s_smp' % tm_arch, join_path(dst, 'bin', '%s_smp' % tm_arch))
 	    install_tree('libso/%s_smp' % tm_arch, join_path(dst, 'libso', '%s_smp' % tm_arch))
-	    install_tree('mpirun_scripts/%s_smp', join_path(dst, 'mpirun_scripts', '%s_smp' % tm_arch))
+	    install_tree('mpirun_scripts/%s_smp' % tm_arch, join_path(dst, 'mpirun_scripts', '%s_smp' % tm_arch))
         else:
 	    install_tree('bin/%s' % tm_arch, join_path(dst, 'bin', tm_arch))
         if '+mpi' in spec or '+smp' in spec:
