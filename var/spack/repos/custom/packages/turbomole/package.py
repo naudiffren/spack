@@ -12,6 +12,15 @@ class Turbomole(Package):
     variant('mpi', default=False, description='Set up MPI environment')
     variant('smp', default=False, description='Set up SMP environment')
 
+    # Turbomole's install is odd. There are three variants
+    # - serial
+    # - parallel, MPI
+    # - parallel, SMP
+    #
+    # Only one of these can be active at a time. MPI and SMP are set as
+    # variants so there could be up to 3 installs per version. Switching
+    # between them would be accomplished with `module swap` commands. 
+
     def install(self, spec, prefix):
         if spec.satisfies('@:7.0.2'):
             calculate_version = 'calculate_2.4_linux64'
@@ -66,6 +75,7 @@ class Turbomole(Package):
         run_env.set('TURBODIR', join_path(self.prefix, 'TURBOMOLE'))
 	run_env.set('MOLE_CONTROL', join_path(self.prefix, 'TURBOMOLE', molecontrol_version))
 
+	run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'thermocalc'))
 	run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'scripts'))
         if '+mpi' in self.spec:
             run_env.set('PARA_ARCH', 'MPI')
