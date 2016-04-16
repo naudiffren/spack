@@ -28,10 +28,20 @@ class Turbomole(Package):
     # variants so there could be up to 3 installs per version. Switching
     # between them would be accomplished with `module swap` commands. 
 
+    def get_tm_arch(self):
+	# For python-2.7 we could use `tm_arch = subprocess.check_output()`
+        # Use the following for compatibility with python 2.6
+        with open(os.devnull, 'w') as devnull:
+		tm_arch = subprocess.Popen(['sh', 'scripts/sysname'],
+				stdout=subprocess.PIPE,stderr=devnull).communicate()[0]
+		return tm_arch.rstrip('\n')
+        
     def install(self, spec, prefix):
         if spec.satisfies('@:7.0.2'):
             calculate_version = 'calculate_2.4_linux64'
             molecontrol_version = 'MoleControl_2.5'
+
+        tm_arch=self.get_tm_arch()
 
         if '+mpi' in spec and '+smp' in spec:
 	    raise InstallError('Can not have both SMP and MPI enabled in the same build.')
@@ -50,9 +60,7 @@ class Turbomole(Package):
         install_tree('DOC', join_path(dst, 'DOC'))
         install_tree('jbasen', join_path(dst, 'jbasen'))
         install_tree('jkbasen', join_path(dst, 'jkbasen'))
-        install_tree('libso', join_path(dst, 'libso'))
         install_tree(molecontrol_version, join_path(dst, molecontrol_version))
-        install_tree('mpirun_scripts', join_path(dst, 'mpirun_scripts'))
         install_tree('parameter', join_path(dst, 'parameter'))
         install_tree('perlmodules', join_path(dst, 'perlmodules'))
         install_tree('scripts', join_path(dst, 'scripts'))
@@ -69,15 +77,30 @@ class Turbomole(Package):
         install('TURBOMOLE_702_LinuxPC', dst)
 
 	if '+mpi' in spec:
-	    install_tree('bin/x86_64-unknown-linux-gnu_mpi', join_path(dst, 'bin', 'x86_64-unknown-linux-gnu_mpi'))
+	    install_tree('bin/%s_mpi' % tm_arch, join_path(dst, 'bin', '%s_mpi' % tm_arch))
+	    install_tree('libso/%s_mpi' % tm_arch, join_path(dst, 'libso', '%s_mpi' % tm_arch))
+	    install_tree('mpirun_scripts/%s_mpi', join_path(dst, 'mpirun_scripts', '%s_mpi' % tm_arch))
 	elif '+smp' in spec:
-	    install_tree('bin/x86_64-unknown-linux-gnu_smp', join_path(dst, 'bin', 'x86_64-unknown-linux-gnu_smp'))
+	    install_tree('bin/%s_smp' % tm_arch, join_path(dst, 'bin', '%s_smp' % tm_arch))
+	    install_tree('libso/%s_smp' % tm_arch, join_path(dst, 'libso', '%s_smp' % tm_arch))
+	    install_tree('mpirun_scripts/%s_smp', join_path(dst, 'mpirun_scripts', '%s_smp' % tm_arch))
         else:
-	    install_tree('bin/x86_64-unknown-linux-gnu', join_path(dst, 'bin', 'x86_64-unknown-linux-gnu'))
+	    install_tree('bin/%s' % tm_arch, join_path(dst, 'bin', tm_arch))
+        if '+mpi' in spec or '+smp' in spec:
+	    install('mpirun_scripts/ccsdf12', join_path(dst, 'mpirun_scripts'))
+	    install('mpirun_scripts/dscf', join_path(dst, 'mpirun_scripts'))
+	    install('mpirun_scripts/grad', join_path(dst, 'mpirun_scripts'))
+	    install('mpirun_scripts/mpgrad', join_path(dst, 'mpirun_scripts'))
+	    install('mpirun_scripts/pnoccsd', join_path(dst, 'mpirun_scripts'))
+	    install('mpirun_scripts/rdgrad', join_path(dst, 'mpirun_scripts'))
+	    install('mpirun_scripts/ricc2', join_path(dst, 'mpirun_scripts'))
+	    install('mpirun_scripts/ridft', join_path(dst, 'mpirun_scripts'))
 
     def setup_environment(self, spack_env, run_env):
         if self.spec.satisfies('@:7.0.2'):
             molecontrol_version = 'MoleControl_2.5'
+
+        tm_arch=self.get_tm_arch()
 
         run_env.set('TURBODIR', join_path(self.prefix, 'TURBOMOLE'))
 	run_env.set('MOLE_CONTROL', join_path(self.prefix, 'TURBOMOLE', molecontrol_version))
@@ -86,9 +109,10 @@ class Turbomole(Package):
 	run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'scripts'))
         if '+mpi' in self.spec:
             run_env.set('PARA_ARCH', 'MPI')
-            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', 'x86_64-unknown-linux-gnu_mpi'))
+            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', '%s_mpi' % tm_arch))
         elif '+smp' in self.spec:
             run_env.set('PARA_ARCH', 'SMP')
-            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', 'x86_64-unknown-linux-gnu_smp'))
+            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', '%s_smp' % tm_arch))
         else:
-            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', 'x86_64-unknown-linux-gnu'))
+            pass
+            run_env.prepend_path('PATH', join_path(self.prefix, 'TURBOMOLE', 'bin', tm_arch))
