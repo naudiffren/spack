@@ -15,8 +15,8 @@ class Turbomole(Package):
 
     homepage = "http://www.turbomole-gmbh.com/"
 
-    version('7.0.2', '92b97e1e52e8dcf02a4d9ac0147c09d6')
-    url="file://%s/turbolinux702.tar.gz" % os.getcwd()
+    version('7.0.2', '92b97e1e52e8dcf02a4d9ac0147c09d6',
+        url="file://%s/turbolinux702.tar.gz" % os.getcwd())
 
     variant('mpi', default=False, description='Set up MPI environment')
     variant('smp', default=False, description='Set up SMP environment')
@@ -38,10 +38,12 @@ class Turbomole(Package):
     def get_tm_arch(self):
 	# For python-2.7 we could use `tm_arch = subprocess.check_output()`
         # Use the following for compatibility with python 2.6
-        with open(os.devnull, 'w') as devnull:
-		tm_arch = subprocess.Popen(['sh', 'scripts/sysname'],
-				stdout=subprocess.PIPE,stderr=devnull).communicate()[0]
-		return tm_arch.rstrip('\n')
+        if 'TURBOMOLE' in os.getcwd():
+            tm_arch = subprocess.Popen(['sh', 'scripts/sysname'],
+                stdout=subprocess.PIPE).communicate()[0]
+	    return tm_arch.rstrip('\n')
+        else:
+            return
         
     def install(self, spec, prefix):
         if spec.satisfies('@:7.0.2'):
